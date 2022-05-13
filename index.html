@@ -9,6 +9,7 @@
     <script src="TemplateData/UnityProgress.js"></script>
     <script src="Build/UnityLoader.js"></script>
     <script>
+      UnityLoader.compatibilityCheck=function(e,t,r){t();};
         var unityInstance = UnityLoader.instantiate("unityContainer", "Build/webgltest.json", { onProgress: UnityProgress });
         window.addEventListener("resize", onResize);
         function onResize()
