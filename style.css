@@ -16,23 +16,77 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.site-disclaimer { /* YENİ EKLENEN STİL */
+.site-disclaimer {
     text-align: center;
     padding: 10px;
-    background-color: #ececec; /* Hafif farklı bir arka plan rengi */
+    background-color: #ececec;
     border-bottom: 1px solid #ddd;
-    font-size: 0.85em; /* Biraz daha küçük font */
-    color: #444; /* Biraz daha koyu gri metin */
-    margin: -20px -20px 20px -20px; /* Container padding'ini sıfırlayıp tam genişlik ve başlıkla arasında boşluk */
-    border-top-left-radius: 8px; /* Container ile uyumlu köşe yuvarlaklığı */
-    border-top-right-radius: 8px; /* Container ile uyumlu köşe yuvarlaklığı */
+    font-size: 0.85em;
+    color: #444;
+    margin: -20px -20px 20px -20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
-h1, h2, h3 {
+/* Rapor Bilgileri Bölümü Stilleri */
+.report-info-section {
+    margin-bottom: 25px; /* Ana başlıkla arasına boşluk */
+    padding: 20px;
+    background-color: #f8f9fa; /* Hafif bir arka plan */
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.report-info-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 1.1em; /* Biraz daha küçük başlık */
+    color: #343a40;
+}
+
+.report-info-section div {
+    margin-bottom: 12px; /* Alanlar arası boşluk */
+    display: flex;
+    align-items: center;
+}
+.report-info-section div:last-child {
+    margin-bottom: 0;
+}
+
+.report-info-section label {
+    min-width: 170px; /* Etiket genişliği */
+    margin-right: 10px;
+    margin-bottom: 0;
+    font-weight: 500; /* Normalden biraz daha kalın */
+    font-size: 0.95em;
+    color: #495057;
+}
+
+.report-info-section input[type="text"],
+.report-info-section select {
+    flex-grow: 1;
+    padding: 8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 0;
+    font-size: 0.95em;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8em; /* Ana başlık biraz daha büyük */
+}
+
+h2, #namesConfigSection h3, .config-section h2, .student-section h2 { /* Diğer başlıklar */
     color: #333;
     text-align: center;
     margin-bottom: 20px;
 }
+
 
 .config-section, .student-section, #namesConfigSection, .data-buttons {
     margin-bottom: 20px;
@@ -42,19 +96,21 @@ h1, h2, h3 {
     border-radius: 5px;
 }
 
-.config-section div, #namesConfigSection div:not(.criterion-config-item) {
+.config-section div, #namesConfigSection div:not(.criterion-config-item):not(.report-info-section div) { /* Rapor info içindeki div'leri hariç tut */
     margin-bottom: 10px;
 }
 
-label {
+/* Genel label stilini burada biraz daha spesifik hale getirebiliriz veya report-info-section içindekini önceliklendirebiliriz. */
+.config-section label, #namesConfigSection label:not(.criteria-item-dcpc-label) { /* report-info-section label'ları hariç */
     display: inline-block;
     margin-bottom: 5px;
     font-weight: bold;
     min-width: 120px;
 }
 
+
 input[type="text"],
-input[type="number"] {
+input[type="number"] { /* Genel input stilleri, report-info-section içindekiler bunu ezecek */
     padding: 8px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
@@ -101,6 +157,25 @@ button:hover {
     background-color: #c82333;
 }
 
+/* Dinamik Tablo Başlığı */
+.dynamic-table-title {
+    text-align: center;
+    font-size: 1.05em; /* Biraz daha belirgin */
+    font-weight: 600; /* Daha kalın */
+    padding: 12px 15px;
+    margin-bottom: 10px; /* Değerlendirme Tablosu H2'si ile arasına boşluk */
+    background-color: #e9ecef; /* Rapor info ile benzer bir ton */
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    color: #495057; /* Koyu gri */
+    display: none; /* Başlangıçta gizli, içerik varsa JS ile gösterilecek */
+}
+.dynamic-table-title .title-separator {
+    color: #adb5bd; /* Daha soluk bir ayırıcı */
+    margin: 0 12px; /* Ayırıcı etrafında boşluk */
+    font-weight: normal;
+}
+
 
 #gradingTableContainer {
     overflow-x: auto;
@@ -109,7 +184,7 @@ button:hover {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 5px; /* Dinamik başlık sonrası tabloya daha yakın */
 }
 
 th, td {
@@ -207,7 +282,7 @@ td input[type="number"] {
 
 #namesConfigSection .criteria-item-dcpc-label {
     min-width: auto;
-    font-weight: normal;
+    font-weight: normal; /* Rapor info label'larından farklı */
     margin-left: 5px;
     margin-right: 5px;
     margin-bottom: 0;

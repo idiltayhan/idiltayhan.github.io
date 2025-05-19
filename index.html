@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proje Değerlendirme Sistemi - hesaplayıcı</title>
+    <title>Proje Değerlendirme Sistemi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-            <p class="site-disclaimer">
-Bu platform, not değerlendirme sürecinde kullanılmak üzere geliştirilmiştir.
+        <p class="site-disclaimer">Bu platform, not değerlendirme sürecinde kullanılmak üzere geliştirilmiştir.
 <br><br>
 <strong>Bu web sitesi herhangi bir üniversiteye veya kuruma ait resmi bir sistem değildir</strong> ve resmi bir değerlendirme ya da not giriş platformu olarak kullanılmamalıdır.
 <br><br>
@@ -19,7 +18,28 @@ Bu sistemde yapılan hesaplamalar ve girilen veriler <strong>yalnızca kullanıc
 PDF dışa aktarma desteği şu an için mevcut değildir. Lütfen hesaplama işlemleriniz tamamlandığında <strong>ekran görüntüsü alarak</strong> kişisel arşivinize kaydediniz. Aksi takdirde verileriniz kaybolabilir ve işlemleri yeniden yapmanız gerekebilir.
 <br><br>
 <strong>Bu sistem, sadece yetkili kişiler tarafından kullanılmak üzere tasarlanmıştır</strong>. Dış kullanıcıların erişimi ve kullanımı kesinlikle yasaktır.
-        <h1>Proje Değerlendirme Sistemi - hesaplayıcı</h1>
+
+
+        <div class="report-info-section">
+            <h3>Rapor Bilgileri</h3>
+            <div>
+                <label for="evaluationType">Değerlendirme Türü:</label>
+                <select id="evaluationType">
+                    <option value="Ara Değerlendirme Notu">Ara Değerlendirme Notu</option>
+                    <option value="Final Notu">Final Notu</option>
+                </select>
+            </div>
+            <div>
+                <label for="courseCode">Ders Kodu ve Şubesi:</label>
+                <input type="text" id="courseCode" placeholder="Örn: GIT301 - A">
+            </div>
+            <div>
+                <label for="instructorName">Öğretim Görevlisi:</label>
+                <input type="text" id="instructorName" placeholder="Örn: Öğr. Gör. Dr. İsim Soyisim">
+            </div>
+        </div>
+
+        <h1>Proje Değerlendirme Sistemi</h1>
 
         <div class="config-section">
             <h2>Yapılandırma</h2>
@@ -53,6 +73,8 @@ PDF dışa aktarma desteği şu an için mevcut değildir. Lütfen hesaplama iş
             <button id="clearDataButton">Tüm Verileri Temizle</button>
         </div>
 
+        <div id="dynamicTableTitle" class="dynamic-table-title">
+            </div>
         <h2>Değerlendirme Tablosu</h2>
         <div id="gradingTableContainer">
             <p class="placeholder-text">Lütfen önce yapılandırmayı uygulayın ve öğrenci ekleyin.</p>

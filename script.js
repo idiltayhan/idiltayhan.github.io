@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Rapor Bilgileri DOM Elemanları
+    const evaluationTypeInput = document.getElementById('evaluationType');
+    const courseCodeInput = document.getElementById('courseCode');
+    const instructorNameInput = document.getElementById('instructorName');
+    const dynamicTableTitleDiv = document.getElementById('dynamicTableTitle');
+
+    // Yapılandırma DOM Elemanları
     const numProjectsInput = document.getElementById('numProjects');
     const numCriteriaInput = document.getElementById('numCriteria');
     const setConfigButton = document.getElementById('setConfigButton');
@@ -7,21 +14,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const criteriaNamesContainer = document.getElementById('criteriaNamesContainer');
     const saveNamesButton = document.getElementById('saveNamesButton');
 
+    // Öğrenci Ekleme DOM Elemanları
     const studentNameInput = document.getElementById('studentNameInput');
     const addStudentButton = document.getElementById('addStudentButton');
-    const gradingTableContainer = document.getElementById('gradingTableContainer');
-    const classSuccessStatsContainer = document.getElementById('classSuccessStats'); // Stats container
 
+    // Tablo ve İstatistik DOM Elemanları
+    const gradingTableContainer = document.getElementById('gradingTableContainer');
+    const classSuccessStatsContainer = document.getElementById('classSuccessStats');
+
+    // Veri Yönetimi Butonları
     const saveDataButton = document.getElementById('saveDataButton');
     const loadDataButton = document.getElementById('loadDataButton');
     const clearDataButton = document.getElementById('clearDataButton');
 
+    // Global Değişkenler
     let projectNames = [];
     let criteriaNames = []; // Array of objects: [{ name: 'Kriter Adı', dc: 1, pc: 1 }, ...]
     let students = [];
-
     const SUCCESS_THRESHOLD = 50; // Başarı eşiği (100 üzerinden)
 
+    // --- Rapor Bilgileri Fonksiyonları ---
+    function updateDynamicTableTitle() {
+        if (!dynamicTableTitleDiv) return;
+
+        const evalType = evaluationTypeInput.value;
+        const course = courseCodeInput.value.trim();
+        const instructor = instructorNameInput.value.trim();
+
+        let titleParts = [];
+        // Değerlendirme türü her zaman gösterilsin, boş olamaz (dropdown)
+        titleParts.push(`Değerlendirme Türü: ${evalType}`);
+        if (course) titleParts.push(`Ders: ${course}`);
+        if (instructor) titleParts.push(`Öğr. Gör.: ${instructor}`);
+
+        if (titleParts.length > 0) {
+            dynamicTableTitleDiv.innerHTML = titleParts.join(' <span class="title-separator">|</span> ');
+            dynamicTableTitleDiv.style.display = 'block';
+        } else {
+            // Bu durum normalde yaşanmaz çünkü Değerlendirme Türü hep seçili olacak.
+            dynamicTableTitleDiv.innerHTML = '';
+            dynamicTableTitleDiv.style.display = 'none';
+        }
+    }
+
+    // Rapor Bilgileri Alanları için Event Listener'lar
+    evaluationTypeInput.addEventListener('change', updateDynamicTableTitle);
+    courseCodeInput.addEventListener('input', updateDynamicTableTitle);
+    instructorNameInput.addEventListener('input', updateDynamicTableTitle);
+
+
+    // --- Yapılandırma Fonksiyonları ---
     setConfigButton.addEventListener('click', () => {
         const pCount = parseInt(numProjectsInput.value);
         const cCount = parseInt(numCriteriaInput.value);
@@ -71,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         namesConfigSection.style.display = 'block';
         updatePlaceholderText();
-        renderGradingTable(); // Yapılandırma değişince tablo ve istatistikler güncellensin
+        renderGradingTable();
     });
 
     saveNamesButton.addEventListener('click', () => {
@@ -127,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGradingTable();
     });
 
+    // --- Öğrenci ve Not İşlemleri ---
     addStudentButton.addEventListener('click', () => {
         if (projectNames.length === 0 || criteriaNames.length === 0) {
             alert("Lütfen önce proje ve kriter yapılandırmasını yapıp isimleri kaydedin.");
@@ -178,19 +221,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderGradingTable() {
+        // updateDynamicTableTitle(); // Tablo render edilmeden önce başlık güncellenebilir veya render sonrası. Zaten event listener ile anlık güncelleniyor.
+
         if (projectNames.length === 0 || criteriaNames.length === 0) {
             updatePlaceholderText();
-            calculateAndDisplayClassSuccessStats(); // İstatistikleri de temizle/güncelle
+            calculateAndDisplayClassSuccessStats();
             return;
         }
         if (students.length === 0 && (projectNames.length > 0 || criteriaNames.length > 0)) {
             gradingTableContainer.innerHTML = '<p class="placeholder-text">Yapılandırma tamam. Değerlendirme yapmak için öğrenci ekleyin.</p>';
-            calculateAndDisplayClassSuccessStats(); // İstatistikleri de temizle/güncelle
+            calculateAndDisplayClassSuccessStats();
             return;
         }
         if (students.length === 0){
             updatePlaceholderText();
-            calculateAndDisplayClassSuccessStats(); // İstatistikleri de temizle/güncelle
+            calculateAndDisplayClassSuccessStats();
             return;
         }
 
@@ -224,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         tableHTML += '</tbody></table>';
         gradingTableContainer.innerHTML = tableHTML;
-        calculateAndDisplayClassSuccessStats(); // Tablo oluşturulduktan sonra istatistikleri hesapla ve göster
+        calculateAndDisplayClassSuccessStats();
     }
 
     window.updateGrade = function(inputElement, studentId, projectName, criteriaName) {
@@ -240,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const finalGrade = calculateStudentFinalGrade(student);
                 finalGradeCell.textContent = finalGrade.toFixed(2);
             }
-            calculateAndDisplayClassSuccessStats(); // Not güncellenince istatistikleri de güncelle
+            calculateAndDisplayClassSuccessStats();
         }
     }
     
@@ -252,12 +297,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Veri Yönetimi Fonksiyonları ---
     saveDataButton.addEventListener('click', () => {
-        if (students.length === 0 && projectNames.length === 0 && criteriaNames.length === 0) {
+        if (students.length === 0 && projectNames.length === 0 && criteriaNames.length === 0 &&
+            !courseCodeInput.value && !instructorNameInput.value) { // Rapor bilgileri de boşsa
             alert("Kaydedilecek veri bulunmuyor.");
             return;
         }
         const dataToSave = {
+            // Rapor Bilgileri
+            reportEvalType: evaluationTypeInput.value,
+            reportCourseCode: courseCodeInput.value,
+            reportInstructorName: instructorNameInput.value,
+            // Yapılandırma ve Not Verileri
             numProjectsStored: parseInt(numProjectsInput.value),
             numCriteriaStored: parseInt(numCriteriaInput.value),
             projectNames: projectNames,
@@ -272,13 +324,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedData = localStorage.getItem('gradingSystemData');
         if (savedData) {
             const parsedData = JSON.parse(savedData);
+            
+            // Rapor Bilgilerini Yükle
+            evaluationTypeInput.value = parsedData.reportEvalType || 'Ara Değerlendirme Notu';
+            courseCodeInput.value = parsedData.reportCourseCode || '';
+            instructorNameInput.value = parsedData.reportInstructorName || '';
+            updateDynamicTableTitle(); // Başlığı güncelle
+
+            // Yapılandırma ve Not Verilerini Yükle
             numProjectsInput.value = parsedData.numProjectsStored || 3;
             numCriteriaInput.value = parsedData.numCriteriaStored || 3;
             projectNames = parsedData.projectNames || [];
             criteriaNames = parsedData.criteriaNames || [];
-            setConfigButton.click(); // Bu, inputları ve selectleri dolduracak ve renderGradingTable'ı çağıracak
+            
+            setConfigButton.click(); // Bu, inputları ve selectleri dolduracak
+            
             students = parsedData.students || [];
-            renderGradingTable(); // Öğrenciler yüklendikten sonra tabloyu ve istatistikleri yeniden oluştur
+            renderGradingTable(); // Öğrenciler ve yapılandırma yüklendikten sonra tabloyu ve istatistikleri yeniden oluştur
             alert("Veriler başarıyla yüklendi!");
         } else {
             alert("Kaydedilmiş veri bulunamadı.");
@@ -288,6 +350,14 @@ document.addEventListener('DOMContentLoaded', () => {
     clearDataButton.addEventListener('click', () => {
         if (confirm("Tüm verileri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
             localStorage.removeItem('gradingSystemData');
+
+            // Rapor Bilgilerini Sıfırla
+            evaluationTypeInput.value = 'Ara Değerlendirme Notu'; // Varsayılan
+            courseCodeInput.value = '';
+            instructorNameInput.value = '';
+            updateDynamicTableTitle(); // Başlığı güncelle
+
+            // Yapılandırma ve Not Verilerini Sıfırla
             projectNames = [];
             criteriaNames = [];
             students = [];
@@ -296,12 +366,13 @@ document.addEventListener('DOMContentLoaded', () => {
             projectNamesContainer.innerHTML = '';
             criteriaNamesContainer.innerHTML = '';
             namesConfigSection.style.display = 'none';
+            
             renderGradingTable(); 
             alert("Tüm veriler silindi.");
         }
     });
 
-    // Sınıf Başarı İstatistikleri Fonksiyonları
+    // --- Sınıf Başarı İstatistikleri Fonksiyonları ---
     function getUniqueDCPCPairs() {
         const uniquePairs = [];
         const seenPairs = new Set();
@@ -374,6 +445,8 @@ document.addEventListener('DOMContentLoaded', () => {
         classSuccessStatsContainer.innerHTML = content;
     }
 
-    updatePlaceholderText();
-    calculateAndDisplayClassSuccessStats(); // Sayfa ilk yüklendiğinde istatistik bölümünü başlat
+    // --- Sayfa İlk Yüklendiğinde Çalışacaklar ---
+    updateDynamicTableTitle(); // Rapor başlığını ilk değerleriyle ayarla
+    updatePlaceholderText();   // Tablo için placeholder metnini ayarla
+    calculateAndDisplayClassSuccessStats(); // İstatistik bölümünü ilk haliyle ayarla
 });
