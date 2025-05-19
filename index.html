@@ -1,35 +1,56 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | SürdürülebilirGrafikFinal</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-    <script src="TemplateData/UnityProgress.js"></script>
-    <script src="Build/UnityLoader.js"></script>
-    <script>
-        UnityLoader.compatibilityCheck = function (e, t, r) { t(); };
-        var unityInstance = UnityLoader.instantiate("unityContainer", "Build/webgltest.json", { onProgress: UnityProgress });
-        window.addEventListener("resize", onResize);
-        function onResize()
-        {
-            unityInstance.SendMessage("DebugText", "SetWidth", window.innerWidth);
-            unityInstance.SendMessage("DebugText", "SetHeight", window.innerHeight);
-            unityInstance.SendMessage("DebugText", "OnResize");
-        }
-    </script>
-  </head>
-  <body>
-      <div class="webgl-content" style="display:table;width:100%; height:100%;">
-          <div id="unityContainer"></div>
-      </div>
-      <script>
-          var myWidth = innerWidth;
-          var myHeight = innerHeight;
-          document.getElementById("unityContainer").style.width = myWidth + "px";
-          document.getElementById("unityContainer").style.height = myHeight + "px";
-      </script>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOBB ETÜ GİT Proje Değerlendirme Sistemi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>TOBB ETÜ GİT Proje Değerlendirme Sistemi</h1>
 
-  </body>
+        <div class="config-section">
+            <h2>Yapılandırma</h2>
+            <div>
+                <label for="numProjects">Proje Sayısı:</label>
+                <input type="number" id="numProjects" value="3" min="1">
+            </div>
+            <div>
+                <label for="numCriteria">Kriter Sayısı:</label>
+                <input type="number" id="numCriteria" value="3" min="1">
+            </div>
+            <button id="setConfigButton">Yapılandırmayı Uygula</button>
+        </div>
+
+        <div id="namesConfigSection" style="display:none;">
+            <h3>Proje ve Kriter İsimleri</h3>
+            <div id="projectNamesContainer"></div>
+            <div id="criteriaNamesContainer"></div>
+            <button id="saveNamesButton">İsimleri Kaydet ve Tabloyu Güncelle</button>
+        </div>
+
+        <div class="student-section">
+            <h2>Öğrenci Ekle</h2>
+            <input type="text" id="studentNameInput" placeholder="Öğrenci Adı Soyadı">
+            <button id="addStudentButton">Öğrenci Ekle</button>
+        </div>
+
+        <div class="data-buttons">
+            <button id="saveDataButton">Tüm Verileri Kaydet</button>
+            <button id="loadDataButton">Verileri Yükle</button>
+            <button id="clearDataButton">Tüm Verileri Temizle</button>
+        </div>
+
+        <h2>Değerlendirme Tablosu</h2>
+        <div id="gradingTableContainer">
+            <p class="placeholder-text">Lütfen önce yapılandırmayı uygulayın ve öğrenci ekleyin.</p>
+        </div>
+
+        <div id="classSuccessStats">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>

@@ -1,0 +1,258 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 1300px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2, h3 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.config-section, .student-section, #namesConfigSection, .data-buttons {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.config-section div, #namesConfigSection div:not(.criterion-config-item) {
+    margin-bottom: 10px;
+}
+
+label {
+    display: inline-block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    min-width: 120px;
+}
+
+input[type="text"],
+input[type="number"] {
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.config-section input[type="number"] {
+    width: calc(100% - 130px);
+}
+
+.student-section input[type="text"]{
+    width: calc(100% - 135px);
+}
+
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-right: 5px;
+    margin-top: 5px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#addStudentButton {
+    background-color: #28a745;
+}
+#addStudentButton:hover {
+    background-color: #1e7e34;
+}
+
+#clearDataButton {
+    background-color: #dc3545;
+}
+#clearDataButton:hover {
+    background-color: #c82333;
+}
+
+
+#gradingTableContainer {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    font-size: 0.9em;
+}
+
+td input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+}
+
+.placeholder-text {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+.project-header {
+    text-align: center !important;
+}
+
+.student-name-col {
+    min-width: 150px;
+    font-weight: bold;
+    position: sticky;
+    left: 0;
+    background-color: #f0f0f0;
+    z-index: 1;
+}
+
+.criteria-header th {
+    font-size: 0.8em;
+    background-color: #6c757d;
+}
+
+.final-grade-col {
+    font-weight: bold;
+    text-align: center !important;
+    background-color: #28a745 !important;
+    color: white !important;
+    min-width: 100px;
+}
+.final-grade-cell {
+    font-weight: bold;
+    text-align: center;
+    background-color: #e9f5e9;
+}
+
+#projectNamesContainer div {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+#projectNamesContainer label {
+    min-width: 120px;
+    margin-bottom: 0;
+    margin-right: 5px;
+}
+#projectNamesContainer input[type="text"] {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+
+#namesConfigSection .criterion-config-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: nowrap;
+}
+
+#namesConfigSection .criteria-item-label {
+    min-width: 70px;
+    margin-right: 5px;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+#namesConfigSection .criteria-item-name-input {
+    flex-grow: 1;
+    min-width: 150px;
+    margin-right: 10px;
+    margin-bottom: 0;
+}
+
+#namesConfigSection .criteria-item-dcpc-label {
+    min-width: auto;
+    font-weight: normal;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+#namesConfigSection .criteria-item-select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+    line-height: 1;
+    height: 35px;
+    box-sizing: border-box;
+}
+
+#namesConfigSection .criteria-item-select:last-of-type {
+    margin-right: 0;
+}
+
+/* Sınıf Başarı İstatistikleri Bölümü Stilleri */
+#classSuccessStats {
+    margin-top: 30px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#classSuccessStats h3 {
+    margin-top: 0;
+    color: #333;
+    text-align: left; /* Genel h3 merkezlemesini ezer */
+    margin-bottom: 15px;
+}
+
+#classSuccessStats ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 10px;
+}
+
+#classSuccessStats li {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    padding: 5px;
+    border-bottom: 1px dashed #eee;
+}
+#classSuccessStats li:last-child {
+    border-bottom: none;
+}
+#classSuccessStats p {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #555;
+}
+#classSuccessStats p small {
+    font-size: 0.85em;
+    color: #777;
+}
