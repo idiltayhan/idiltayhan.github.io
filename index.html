@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Proje Değerlendirme Sistemi</title>
-    <link rel="stylesheet" href="style.css">
+
+    <!-- Stil dosyası -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- SheetJS (XLSX) — Excel’e aktarım için -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <p class="site-disclaimer">Bu platform, not değerlendirme sürecinde kullanılmak üzere geliştirilmiştir.
-<br><br>
-<strong>Bu web sitesi herhangi bir üniversiteye veya kuruma ait resmi bir sistem değildir</strong> ve resmi bir değerlendirme ya da not giriş platformu olarak kullanılmamalıdır.
-<br><br>
-Bu sistemde yapılan hesaplamalar ve girilen veriler <strong>yalnızca kullanıcı cihazında lokal olarak</strong> tutulur. Herhangi bir şekilde merkezi bir sunucuya ya da kurumsal sisteme aktarım yapılmaz.
-<br><br>
-<strong>Bu platformda hesaplanan notlar, herhangi bir resmi not sistemine işlenmez</strong>
-PDF dışa aktarma desteği şu an için mevcut değildir. Lütfen hesaplama işlemleriniz tamamlandığında <strong>ekran görüntüsü alarak</strong> kişisel arşivinize kaydediniz. Aksi takdirde verileriniz kaybolabilir ve işlemleri yeniden yapmanız gerekebilir.
-<br><br>
-<strong>Bu sistem, sadece yetkili kişiler tarafından kullanılmak üzere tasarlanmıştır</strong>. Dış kullanıcıların erişimi ve kullanımı kesinlikle yasaktır.
+        <!-- Site açıklaması -->
+        <p class="site-disclaimer">
+            Bu platform yalnızca not hesaplama amaçlıdır; veriler lokal depolanır ve
+            hiçbir resmî sisteme gönderilmez.
+        </p>
 
-
+        <!-- RAPOR BİLGİLERİ ------------------------------------------------- -->
         <div class="report-info-section">
             <h3>Rapor Bilgileri</h3>
+
             <div>
                 <label for="evaluationType">Değerlendirme Türü:</label>
                 <select id="evaluationType">
@@ -29,61 +30,79 @@ PDF dışa aktarma desteği şu an için mevcut değildir. Lütfen hesaplama iş
                     <option value="Final Notu">Final Notu</option>
                 </select>
             </div>
+
             <div>
-                <label for="courseCode">Ders Kodu ve Şubesi:</label>
-                <input type="text" id="courseCode" placeholder="Örn: GIT301 - A">
+                <label for="courseCode">Ders Kodu / Şube:</label>
+                <input id="courseCode" type="text" placeholder="Örn: GIT301-A" />
             </div>
+
             <div>
-                <label for="instructorName">Öğretim Görevlisi:</label>
-                <input type="text" id="instructorName" placeholder="Örn: Öğr. Gör. Dr. İsim Soyisim">
+                <label for="instructorName">Öğr. Gör.:</label>
+                <input id="instructorName" type="text" placeholder="Ad Soyad" />
             </div>
         </div>
 
         <h1>Proje Değerlendirme Sistemi</h1>
 
+        <!-- YAPILANDIRMA ---------------------------------------------------- -->
         <div class="config-section">
             <h2>Yapılandırma</h2>
+
             <div>
                 <label for="numProjects">Proje Sayısı:</label>
-                <input type="number" id="numProjects" value="3" min="1">
+                <input id="numProjects" type="number" value="3" min="1" />
             </div>
+
             <div>
                 <label for="numCriteria">Kriter Sayısı:</label>
-                <input type="number" id="numCriteria" value="3" min="1">
+                <input id="numCriteria" type="number" value="3" min="1" />
             </div>
+
             <button id="setConfigButton">Yapılandırmayı Uygula</button>
         </div>
 
+        <!-- Proje / kriter isimleri -->
         <div id="namesConfigSection" style="display:none;">
             <h3>Proje ve Kriter İsimleri</h3>
             <div id="projectNamesContainer"></div>
             <div id="criteriaNamesContainer"></div>
-            <button id="saveNamesButton">İsimleri Kaydet ve Tabloyu Güncelle</button>
+            <button id="saveNamesButton">İsimleri Kaydet & Tabloyu Güncelle</button>
         </div>
 
+        <!-- ÖĞRENCİ --------------------------------------------------------- -->
         <div class="student-section">
             <h2>Öğrenci Ekle</h2>
-            <input type="text" id="studentNameInput" placeholder="Öğrenci Adı Soyadı">
+            <input
+                id="studentNameInput"
+                type="text"
+                placeholder="Öğrenci Adı Soyadı"
+            />
             <button id="addStudentButton">Öğrenci Ekle</button>
         </div>
 
+        <!-- VERİ / EXPORT BUTONLARI ---------------------------------------- -->
         <div class="data-buttons">
-            <button id="saveDataButton">Tüm Verileri Kaydet</button>
-            <button id="loadDataButton">Verileri Yükle</button>
-            <button id="clearDataButton">Tüm Verileri Temizle</button>
+            <button id="saveDataButton">Kaydet</button>
+            <button id="loadDataButton">Yükle</button>
+            <button id="clearDataButton">Temizle</button>
+            <!-- Excel butonu -->
+            <button id="exportExcelButton">Excel’e Aktar</button>
         </div>
 
-        <div id="dynamicTableTitle" class="dynamic-table-title">
-            </div>
+        <!-- Dinamik başlık + tablo -->
+        <div id="dynamicTableTitle" class="dynamic-table-title"></div>
         <h2>Değerlendirme Tablosu</h2>
         <div id="gradingTableContainer">
-            <p class="placeholder-text">Lütfen önce yapılandırmayı uygulayın ve öğrenci ekleyin.</p>
+            <p class="placeholder-text">
+                Lütfen yapılandırmayı tamamlayıp öğrenci ekleyin.
+            </p>
         </div>
 
-        <div id="classSuccessStats">
-            </div>
+        <!-- Sınıf başarı istatistikleri -->
+        <div id="classSuccessStats"></div>
     </div>
 
+    <!-- Ana JS -->
     <script src="script.js"></script>
 </body>
 </html>
