@@ -16,6 +16,18 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.site-disclaimer { /* YENİ EKLENEN STİL */
+    text-align: center;
+    padding: 10px;
+    background-color: #ececec; /* Hafif farklı bir arka plan rengi */
+    border-bottom: 1px solid #ddd;
+    font-size: 0.85em; /* Biraz daha küçük font */
+    color: #444; /* Biraz daha koyu gri metin */
+    margin: -20px -20px 20px -20px; /* Container padding'ini sıfırlayıp tam genişlik ve başlıkla arasında boşluk */
+    border-top-left-radius: 8px; /* Container ile uyumlu köşe yuvarlaklığı */
+    border-top-right-radius: 8px; /* Container ile uyumlu köşe yuvarlaklığı */
+}
+
 h1, h2, h3 {
     color: #333;
     text-align: center;
@@ -228,7 +240,7 @@ td input[type="number"] {
 #classSuccessStats h3 {
     margin-top: 0;
     color: #333;
-    text-align: left; /* Genel h3 merkezlemesini ezer */
+    text-align: left;
     margin-bottom: 15px;
 }
 
