@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+
+    <!-- index.html - </head> kapanışından hemen ÖNCE ekle / eski satırı sil -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<!-- CDN 1 çökerse Cloudflare’a, o da yoksa yereldeki kopyaya geç -->
+<script>
+if(typeof XLSX==='undefined'){
+  document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"><\\/script>');
+}
+if(typeof XLSX==='undefined'){
+  document.write('<script src="xlsx.full.min.js"><\\/script>'); // / projenin kökünde
+}
+</script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Proje Değerlendirme Sistemi</title>
