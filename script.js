@@ -146,6 +146,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    /* === ÖĞRENCİ SİLME FONKSİYONU === */
+    window.deleteStudent = (id) => {
+        // Kullanıcıdan onay al
+        if (!confirm('Bu öğrenciyi ve tüm notlarını kalıcı olarak silmek istediğinize emin misiniz?')) {
+            return; // Eğer "İptal" derse, işlemi durdur
+        }
+        
+        // Öğrenciyi 'students' dizisinden filtreleyerek kaldır
+        students = students.filter(s => s.id !== id);
+        
+        // Tabloyu ve istatistikleri güncelle
+        renderTable();
+    };
+
     /* === Not Hesabı === */
     function studentAverage(st){
         let total=0, proj=0;
@@ -167,13 +181,23 @@ document.addEventListener('DOMContentLoaded', () => {
         classStats();
     };
 
+    /* === Tablo === */
+    window.updateGrade = (inp,id,p,c)=>{
+        const st=students.find(s=>s.id===id); if(!st)return;
+        let v=+inp.value; if(isNaN(v)||v<0)v=0; if(v>100)v=100;
+        inp.value=v; st.grades[p][c]=v;
+        document.getElementById(`final-${id}`).textContent = studentAverage(st).toFixed(2);
+        classStats();
+    };
+
     function renderTable(){
         if(!projectNames.length||!criteriaNames.length){updatePlaceholder();classStats();return;}
         if(!students.length){updatePlaceholder();classStats();return;}
 
+        // ---- YENİ BAŞLIK YAPISI ----
         let html = '<table><thead><tr><th rowspan="2" class="student-name-col">Öğrenci</th>';
         projectNames.forEach(p=>html+=`<th colspan="${criteriaNames.length}" class="project-header">${p}</th>`);
-        html+='<th rowspan="2" class="final-grade-col">Ortalama</th></tr><tr>';
+        html+='<th rowspan="2" class="final-grade-col">Ortalama</th><th rowspan="2">İşlem</th></tr><tr>'; // "İşlem" başlığı eklendi
         projectNames.forEach(()=>criteriaNames.forEach(cr=>html+=`<th>${cr.name}</th>`));
         html+='</tr></thead><tbody>';
 
@@ -181,16 +205,19 @@ document.addEventListener('DOMContentLoaded', () => {
             html+=`<tr><td class="student-name-col">${st.name}</td>`;
             projectNames.forEach(p=>criteriaNames.forEach(cr=>{
                 html+=`<td><input type="number" min="0" max="100" value="${st.grades[p][cr.name]}"
-                       oninput="updateGrade(this,'${st.id}','${p}','${cr.name}')"
-                       onchange="updateGrade(this,'${st.id}','${p}','${cr.name}')"></td>`;
+                        oninput="updateGrade(this,'${st.id}','${p}','${cr.name}')"
+                        onchange="updateGrade(this,'${st.id}','${p}','${cr.name}')"></td>`;
             }));
-            html+=`<td id="final-${st.id}" class="final-grade-cell">${studentAverage(st).toFixed(2)}</td></tr>`;
+            html+=`<td id="final-${st.id}" class="final-grade-cell">${studentAverage(st).toFixed(2)}</td>`;
+            
+            // ---- YENİ SİL BUTONU SATIRI ----
+            html+=`<td><button class="delete-student-btn" onclick="deleteStudent('${st.id}')">Sil</button></td></tr>`; // Sil butonu eklendi
         });
+
         html+='</tbody></table>';
         gradingTableContainer.innerHTML=html;
         classStats();
     }
-
     function updatePlaceholder(){
         gradingTableContainer.innerHTML=
           `<p class="placeholder-text">${
