@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const s=localStorage.getItem('gradingData');
         if(!s){alert('Kayıt yok.');return;}
         const d=JSON.parse(s);
-        evaluationTypeInput.value=d.evaluationType||'Ara Değerlendirme Notu';
+        evaluationTypeInput.value=d.evaluationType||'Ara değerlendirme Sunumu Teslimi 1'; // Varsayılanı yeni listenin ilk elemanıyla güncelledik
         courseCodeInput.value=d.courseCode||'';
         instructorNameInput.value=d.instructorName||'';
         updateDynamicTitle();
