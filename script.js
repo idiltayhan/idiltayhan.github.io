@@ -29,6 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exportExcelButton     = document.getElementById('exportExcelButton');
 
+    const masterFillSection     = document.getElementById('masterFillSection');
+    const masterFillButton      = document.getElementById('masterFillButton');
+
+    const NOISE = 10;  // sabit gürültü aralığı ±10
+
 
     /* === GLOBAL === */
     let projectNames = [];
@@ -181,14 +186,88 @@ document.addEventListener('DOMContentLoaded', () => {
         classStats();
     };
 
-    /* === Tablo === */
-    window.updateGrade = (inp,id,p,c)=>{
-        const st=students.find(s=>s.id===id); if(!st)return;
-        let v=+inp.value; if(isNaN(v)||v<0)v=0; if(v>100)v=100;
-        inp.value=v; st.grades[p][c]=v;
-        document.getElementById(`final-${id}`).textContent = studentAverage(st).toFixed(2);
-        classStats();
-    };
+
+    /* === TERS HESAPLAMA (Otomatik Doldur) === */
+    function fillStudentGrades(st, target) {
+        const P = projectNames.length;
+        const C = criteriaNames.length;
+        const total = P * C;
+
+        // 1) Rastgele değerler üret: target ± NOISE
+        let vals = [];
+        for (let i = 0; i < total; i++) {
+            const offset = (Math.random() * 2 - 1) * NOISE;
+            vals.push(target + offset);
+        }
+
+        // 2) Ortalamayı hedefe çek
+        let currentAvg = vals.reduce((a, b) => a + b, 0) / total;
+        let diff = target - currentAvg;
+        vals = vals.map(v => v + diff);
+
+        // 3) Clamp [0, 100] ve yuvarlama
+        vals = vals.map(v => Math.round(Math.max(0, Math.min(100, v))));
+
+        // 4) Yuvarlama sonrası ortalama düzeltme
+        let attempts = 0;
+        while (attempts < 50) {
+            let avg = vals.reduce((a, b) => a + b, 0) / total;
+            let err = Math.round((target - avg) * total);
+            if (err === 0) break;
+            let step = err > 0 ? 1 : -1;
+            let count = Math.abs(err);
+            let indices = [...Array(total).keys()].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < Math.min(count, total); i++) {
+                let nv = vals[indices[i]] + step;
+                if (nv >= 0 && nv <= 100) vals[indices[i]] = nv;
+            }
+            attempts++;
+        }
+
+        // 5) Notları öğrenciye yaz
+        let idx = 0;
+        projectNames.forEach(p => {
+            criteriaNames.forEach(cr => {
+                st.grades[p][cr.name] = vals[idx++];
+            });
+        });
+    }
+
+    /* Ana DOLDUR butonu: hedef girilmiş herkesi doldur */
+    masterFillButton.addEventListener('click', () => {
+        const targets = {};  // id → {student, target}
+        let filled = 0;
+
+        students.forEach(st => {
+            const inp = document.getElementById(`target-${st.id}`);
+            if (!inp) return;
+            const val = parseFloat(inp.value);
+            if (isNaN(val) || val < 0 || val > 100) return;
+            targets[st.id] = { st, target: val };
+        });
+
+        if (Object.keys(targets).length === 0) {
+            alert('Hiçbir öğrenciye hedef not girilmemiş.'); return;
+        }
+
+        // Hedef değerlerini sakla
+        const savedTargets = {};
+        for (const id in targets) {
+            savedTargets[id] = targets[id].target;
+            fillStudentGrades(targets[id].st, targets[id].target);
+            filled++;
+        }
+
+        renderTable();
+
+        // Hedef inputları geri yükle
+        for (const id in savedTargets) {
+            const inp = document.getElementById(`target-${id}`);
+            if (inp) inp.value = savedTargets[id];
+        }
+
+        alert(`${filled} öğrencinin notları dağıtıldı.`);
+    });
 
     function renderTable(){
         if(!projectNames.length||!criteriaNames.length){updatePlaceholder();classStats();return;}
@@ -197,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ---- YENİ BAŞLIK YAPISI ----
         let html = '<table><thead><tr><th rowspan="2" class="student-name-col">Öğrenci</th>';
         projectNames.forEach(p=>html+=`<th colspan="${criteriaNames.length}" class="project-header">${p}</th>`);
-        html+='<th rowspan="2" class="final-grade-col">Ortalama</th><th rowspan="2">İşlem</th></tr><tr>'; // "İşlem" başlığı eklendi
+        html+='<th rowspan="2" class="final-grade-col">Ortalama</th><th rowspan="2" class="target-header cheat-col">Hedef Not</th><th rowspan="2">İşlem</th></tr><tr>';
         projectNames.forEach(()=>criteriaNames.forEach(cr=>html+=`<th>${cr.name}</th>`));
         html+='</tr></thead><tbody>';
 
@@ -210,12 +289,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
             html+=`<td id="final-${st.id}" class="final-grade-cell">${studentAverage(st).toFixed(2)}</td>`;
             
-            // ---- YENİ SİL BUTONU SATIRI ----
-            html+=`<td><button class="delete-student-btn" onclick="deleteStudent('${st.id}')">Sil</button></td></tr>`; // Sil butonu eklendi
+            // ---- HEDEF NOT INPUT ----
+            html+=`<td class="target-grade-cell cheat-col">
+                     <input id="target-${st.id}" type="number" min="0" max="100" class="target-grade-input" placeholder="Not">
+                   </td>`;
+
+            // ---- SİL BUTONU ----
+            html+=`<td><button class="delete-student-btn" onclick="deleteStudent('${st.id}')">Sil</button></td></tr>`;
         });
 
         html+='</tbody></table>';
         gradingTableContainer.innerHTML=html;
+        masterFillSection.classList.add('has-data');
         classStats();
     }
     function updatePlaceholder(){
@@ -224,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
               (!projectNames.length||!criteriaNames.length)?
               'Önce yapılandırmayı uygulayın.' : 'Öğrenci ekleyin.'
           }</p>`;
+        masterFillSection.classList.remove('has-data');
     }
 
 
@@ -329,6 +415,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         /* 1) Not tablosu */
         const tbl = srcTbl.cloneNode(true);
+
+        // Hedef Not ve İşlem sütunlarını Excel'den çıkar
+        tbl.querySelectorAll('tr').forEach(row => {
+            const cells = row.querySelectorAll('th, td');
+            if (cells.length >= 2) {
+                cells[cells.length - 1].remove(); // İşlem
+                cells[cells.length - 2].remove(); // Hedef Not
+            }
+        });
+
         tbl.querySelectorAll('input').forEach(inp=>{
             const td=inp.parentNode; td.textContent=inp.value||'';
         });
@@ -372,6 +468,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* Dinleyici */
     exportExcelButton.addEventListener('click', exportTableToExcel);
+
+
+    /* === Gizli mod: "git" şifresi === */
+    let keyBuffer = '';
+    document.addEventListener('keydown', (e) => {
+        // Input/select içindeyken dinleme
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+        keyBuffer += e.key.toLowerCase();
+        // Son 3 karakteri tut
+        if (keyBuffer.length > 10) keyBuffer = keyBuffer.slice(-10);
+
+        if (keyBuffer.endsWith('git')) {
+            document.body.classList.toggle('cheat-mode');
+            keyBuffer = '';
+        }
+    });
 
 
     /* === İlk açılış === */

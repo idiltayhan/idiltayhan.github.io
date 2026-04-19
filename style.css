@@ -114,10 +114,42 @@ td input[type="number"] { width:60px; padding:5px; text-align:center; }
 
 /* ------- SİL BUTONU STİLİ ------- */
 .delete-student-btn {
-    background-color: #dc3545; /* Kırmızı renk */
+    background-color: #dc3545;
     padding: 5px 10px;
     font-size: 0.9em;
 }
 .delete-student-btn:hover {
-    background-color: #c82333; /* Koyu kırmızı */
+    background-color: #c82333;
 }
+
+/* ------- TERS HESAPLAMA (gizli mod) ------- */
+/* Varsayılan: her şey gizli */
+.cheat-col, .master-fill-section { display: none !important; }
+
+/* body.cheat-mode açıkken göster */
+body.cheat-mode .cheat-col          { display: table-cell !important; }
+body.cheat-mode .master-fill-section.has-data { display: flex !important; }
+
+/* hedef not input (tablo içi) */
+.target-grade-cell { white-space: nowrap; }
+.target-header { background: #e65100 !important; }
+.target-grade-input {
+    width: 58px; padding: 5px; text-align: center;
+    border: 2px solid #ffe082; border-radius: 4px;
+    font-weight: bold; background: #fffde7;
+}
+.target-grade-input:focus { border-color: #e65100; outline: none; }
+
+/* ana doldur butonu */
+.master-fill-section {
+    margin: 12px 0 20px; padding: 12px 15px;
+    display: flex; align-items: center; gap: 14px;
+    background: #fff8e1; border: 1px solid #ffe082; border-radius: 5px;
+}
+#masterFillButton {
+    background-color: #e65100; padding: 10px 22px;
+    font-size: 1em; font-weight: 700; border-radius: 4px;
+    white-space: nowrap;
+}
+#masterFillButton:hover { background-color: #bf360c; }
+.master-fill-hint { font-size: 0.82em; color: #8d6e00; }
