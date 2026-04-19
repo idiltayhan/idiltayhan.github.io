@@ -75,6 +75,13 @@ button:hover { background-color:#0056b3; }
 #csvImportButton:hover  { background-color:#117a8b; }
 .csv-import-row { margin-top:10px; display:flex; align-items:center; gap:10px; }
 .csv-hint { font-size:0.8em; color:#888; }
+
+/* ders bilgi paketi import */
+#dbpImportButton        { background-color:#6f42c1; }
+#dbpImportButton:hover  { background-color:#5a32a3; }
+.dbp-import-row { margin-top:12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.dbp-import-row label { font-weight:600; font-size:0.95em; white-space:nowrap; }
+#courseSelect { flex-grow:1; padding:8px 10px; border:2px solid #6f42c1; border-radius:4px; font-size:0.95em; background:#faf5ff; }
 #clearDataButton      { background-color:#dc3545; }
 #clearDataButton:hover{ background-color:#c82333; }
 #nukeAllSlotsButton      { background-color:#721c24; }
