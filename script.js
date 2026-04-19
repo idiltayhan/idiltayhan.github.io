@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < c; i++) {
             const saved = criteriaNames[i] ?? {name:`Kriter ${i+1}`, dc:1, pc:1};
             let dc='', pc='';
-            for (let j=1;j<=12;j++){
+            for (let j=1;j<=14;j++){
                 dc += `<option ${j===saved.dc?'selected':''}>${j}</option>`;
                 pc += `<option ${j===saved.pc?'selected':''}>${j}</option>`;
             }
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!name){alert('İsim boş.');return;}
         if(students.some(s=>s.name===name)){alert('Öğrenci ekli.');return;}
 
-        const st={id:Date.now().toString(), name, grades:{}};
+        const st={id:Date.now().toString(), name, no:'', grades:{}};
         projectNames.forEach(p=>{
             st.grades[p]={};
             criteriaNames.forEach(c=>st.grades[p][c.name]=0);
@@ -149,6 +149,93 @@ document.addEventListener('DOMContentLoaded', () => {
         studentNameInput.value='';
         renderTable();
     });
+
+    /* === Alfabetik Sıralama === */
+    document.getElementById('sortStudentsButton').addEventListener('click', () => {
+        if (!students.length) return;
+        students.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+        renderTable();
+    });
+
+    /* === CSV'den Öğrenci Yükle === */
+    const csvFileInput    = document.getElementById('csvFileInput');
+    const csvImportButton = document.getElementById('csvImportButton');
+
+    csvImportButton.addEventListener('click', () => {
+        if (!projectNames.length || !criteriaNames.length) {
+            alert('Önce yapılandırmayı tamamlayın.'); return;
+        }
+        csvFileInput.click();
+    });
+
+    csvFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const text = ev.target.result;
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            if (lines.length < 2) { alert('CSV boş veya geçersiz.'); return; }
+
+            // Başlık satırını parse et
+            const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+            const adIdx    = headers.findIndex(h => h === 'ad');
+            const soyadIdx = headers.findIndex(h => h === 'soyad');
+            const noIdx    = headers.findIndex(h => h === 'numara');
+
+            if (adIdx === -1 || soyadIdx === -1) {
+                alert('"Ad" ve "Soyad" sütunları bulunamadı.'); return;
+            }
+
+            let added = 0, skipped = 0;
+            for (let i = 1; i < lines.length; i++) {
+                const cols = parseCSVLine(lines[i]);
+                const ad    = (cols[adIdx]    || '').trim();
+                const soyad = (cols[soyadIdx] || '').trim();
+                const no    = noIdx !== -1 ? (cols[noIdx] || '').trim() : '';
+
+                if (!ad && !soyad) continue;
+
+                const fullName = `${ad} ${soyad}`.trim();
+                if (students.some(s => s.name === fullName)) { skipped++; continue; }
+
+                const st = { id: Date.now().toString() + '_' + i, name: fullName, no, grades: {} };
+                projectNames.forEach(p => {
+                    st.grades[p] = {};
+                    criteriaNames.forEach(c => st.grades[p][c.name] = 0);
+                });
+                students.push(st);
+                added++;
+            }
+
+            renderTable();
+            alert(`${added} öğrenci eklendi` + (skipped ? `, ${skipped} tanesi zaten kayıtlı.` : '.'));
+        };
+        reader.readAsText(file, 'UTF-8');
+        csvFileInput.value = '';  // aynı dosya tekrar seçilebilsin
+    });
+
+    // CSV satırını parse et (tırnak içi virgülleri doğru işle)
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '', inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (inQuotes) {
+                if (ch === '"') {
+                    if (line[i + 1] === '"') { current += '"'; i++; }
+                    else inQuotes = false;
+                } else current += ch;
+            } else {
+                if (ch === '"') inQuotes = true;
+                else if (ch === ',') { result.push(current); current = ''; }
+                else current += ch;
+            }
+        }
+        result.push(current);
+        return result;
+    }
 
 
     /* === ÖĞRENCİ SİLME FONKSİYONU === */
@@ -274,14 +361,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!students.length){updatePlaceholder();classStats();return;}
 
         // ---- YENİ BAŞLIK YAPISI ----
-        let html = '<table><thead><tr><th rowspan="2" class="student-name-col">Öğrenci</th>';
+        let html = '<table><thead><tr><th rowspan="2" class="student-no-col">No</th><th rowspan="2" class="student-name-col">Öğrenci</th>';
         projectNames.forEach(p=>html+=`<th colspan="${criteriaNames.length}" class="project-header">${p}</th>`);
         html+='<th rowspan="2" class="final-grade-col">Ortalama</th><th rowspan="2" class="target-header cheat-col">Hedef Not</th><th rowspan="2">İşlem</th></tr><tr>';
         projectNames.forEach(()=>criteriaNames.forEach(cr=>html+=`<th>${cr.name}</th>`));
         html+='</tr></thead><tbody>';
 
         students.forEach(st=>{
-            html+=`<tr><td class="student-name-col">${st.name}</td>`;
+            html+=`<tr><td class="student-no-col">${st.no||''}</td><td class="student-name-col">${st.name}</td>`;
             projectNames.forEach(p=>criteriaNames.forEach(cr=>{
                 html+=`<td><input type="number" min="0" max="100" value="${st.grades[p][cr.name]}"
                         oninput="updateGrade(this,'${st.id}','${p}','${cr.name}')"
@@ -313,7 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    /* === İstatistik (ortalama yüzde) === */
+    /* === İstatistik (ortalama yüzde + başarı oranı) === */
+    const SUCCESS_THRESHOLD = 60;
+
     function uniqueDCPC(){
         const set=new Set(),arr=[];
         criteriaNames.forEach(c=>{
@@ -323,67 +412,205 @@ document.addEventListener('DOMContentLoaded', () => {
         return arr;
     }
 
+    // Her DÇ/PÇ çifti için detaylı istatistik hesapla
+    function calcDCPCStats(){
+        return uniqueDCPC().map(pr => {
+            const rel = criteriaNames.filter(c => c.dc === pr.dc && c.pc === pr.pc);
+            let totalSum = 0, totalCount = 0;
+            let passCount = 0;
+
+            students.forEach(st => {
+                let stSum = 0, stCount = 0;
+                projectNames.forEach(p => rel.forEach(c => {
+                    stSum += st.grades[p][c.name];
+                    stCount++;
+                }));
+                const stAvg = stCount ? stSum / stCount : 0;
+                totalSum += stSum;
+                totalCount += stCount;
+                if (stAvg >= SUCCESS_THRESHOLD) passCount++;
+            });
+
+            const classAvg = totalCount ? totalSum / totalCount : 0;
+            const passRate = students.length ? (passCount / students.length) * 100 : 0;
+
+            return {
+                dc: pr.dc,
+                pc: pr.pc,
+                classAvg: classAvg,
+                passCount: passCount,
+                totalStudents: students.length,
+                passRate: passRate
+            };
+        });
+    }
+
     function classStats(){
-        let html='<h3>Ortalama Puan (DÇ / PÇ)</h3>';
         if(!students.length||!criteriaNames.length){
-            classSuccessStatsDiv.innerHTML=html+'<p>İstatistik için veri yok.</p>';
+            classSuccessStatsDiv.innerHTML='<h3>Sınıf İstatistikleri</h3><p>İstatistik için veri yok.</p>';
             return;
         }
-        html+='<ul>';
-        uniqueDCPC().forEach(pr=>{
-            let sum=0,count=0;
-            const rel=criteriaNames.filter(c=>c.dc===pr.dc&&c.pc===pr.pc);
-            students.forEach(st=>projectNames.forEach(p=>rel.forEach(c=>{
-                sum+=st.grades[p][c.name]; count++;
-            })));
-            const avg = count? (sum/count).toFixed(2)+'%' : '—';
-            html+=`<li>DÇ ${pr.dc} / PÇ ${pr.pc}: ${avg}</li>`;
+
+        const stats = calcDCPCStats();
+
+        let html = '<h3>Sınıf İstatistikleri (DÇ / PÇ)</h3>';
+        html += `<p class="stats-threshold-note">Başarı eşiği: <strong>%${SUCCESS_THRESHOLD}</strong> · Toplam öğrenci: <strong>${students.length}</strong></p>`;
+        html += '<div class="stats-grid">';
+
+        stats.forEach(s => {
+            const barColor = s.passRate >= 70 ? '#28a745' : s.passRate >= 50 ? '#ffc107' : '#dc3545';
+            html += `
+            <div class="stat-card">
+                <div class="stat-card-header">DÇ ${s.dc} / PÇ ${s.pc}</div>
+                <div class="stat-row">
+                    <span class="stat-label">Sınıf Ortalaması</span>
+                    <span class="stat-value">${s.classAvg.toFixed(1)}%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Başarılı Öğrenci</span>
+                    <span class="stat-value">${s.passCount} / ${s.totalStudents}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Başarı Oranı</span>
+                    <span class="stat-value" style="color:${barColor};font-weight:700;">%${s.passRate.toFixed(1)}</span>
+                </div>
+                <div class="stat-bar-bg">
+                    <div class="stat-bar-fill" style="width:${Math.min(s.passRate,100)}%;background:${barColor};"></div>
+                </div>
+            </div>`;
         });
-        html+='</ul>';
-        classSuccessStatsDiv.innerHTML=html;
+
+        html += '</div>';
+        classSuccessStatsDiv.innerHTML = html;
     }
 
 
-    /* === Veri Yönetimi === */
-    saveDataButton.addEventListener('click',()=>{
-        if(!students.length&&!projectNames.length&&!criteriaNames.length
-           &&!courseCodeInput.value&&!instructorNameInput.value){
-            alert('Kaydedilecek veri yok.');return;
-        }
-        localStorage.setItem('gradingData', JSON.stringify({
-            evaluationType:evaluationTypeInput.value,
-            courseCode:courseCodeInput.value,
-            instructorName:instructorNameInput.value,
-            numProj:+numProjectsInput.value,
-            numCrit:+numCriteriaInput.value,
+    /* === Slot Overlay Sistemi (5 kayıt slotu) === */
+    const SLOT_COUNT = 5;
+    const slotOverlay   = document.getElementById('slotOverlay');
+    const slotModalTitle= document.getElementById('slotModalTitle');
+    const slotNameRow   = document.getElementById('slotNameRow');
+    const slotNameInput = document.getElementById('slotNameInput');
+    const slotButtonsDiv= document.getElementById('slotButtons');
+    const slotModalClose= document.getElementById('slotModalClose');
+
+    let slotMode = '';  // 'save' veya 'load'
+
+    function getSlot(i){
+        try { return JSON.parse(localStorage.getItem(`gradingSlot_${i}`)); }
+        catch(e){ return null; }
+    }
+
+    function formatDate(ts){
+        if(!ts) return '';
+        const d = new Date(ts);
+        return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    }
+
+    function buildCurrentData(){
+        return {
+            evaluationType: evaluationTypeInput.value,
+            courseCode: courseCodeInput.value,
+            instructorName: instructorNameInput.value,
+            numProj: +numProjectsInput.value,
+            numCrit: +numCriteriaInput.value,
             projectNames, criteriaNames, students
-        }));
-        alert('Kaydedildi.');
+        };
+    }
+
+    function openSlotOverlay(mode){
+        slotMode = mode;
+        slotModalTitle.textContent = mode === 'save' ? 'Kayıt Slotu Seçin' : 'Yüklenecek Slotu Seçin';
+        slotNameRow.style.display = mode === 'save' ? 'flex' : 'none';
+        slotNameInput.value = '';
+
+        let html = '';
+        for(let i = 0; i < SLOT_COUNT; i++){
+            const slot = getSlot(i);
+            if(slot){
+                html += `<div class="slot-btn" data-slot="${i}">
+                    <span class="slot-num">${i+1}</span>
+                    <div class="slot-info">
+                        <div class="slot-label">${slot.label || 'İsimsiz Kayıt'}</div>
+                        <div class="slot-date">${formatDate(slot.savedAt)}</div>
+                    </div>
+                </div>`;
+            } else {
+                html += `<div class="slot-btn empty-slot" data-slot="${i}" ${mode==='load'?'style="opacity:0.4;pointer-events:none;"':''}>
+                    <span class="slot-num">${i+1}</span>
+                    <div class="slot-info"><span class="slot-empty-text">Boş Slot</span></div>
+                </div>`;
+            }
+        }
+        slotButtonsDiv.innerHTML = html;
+
+        // Slot buton tıklama
+        slotButtonsDiv.querySelectorAll('.slot-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = +btn.dataset.slot;
+                if(slotMode === 'save') doSave(idx);
+                else doLoad(idx);
+            });
+        });
+
+        slotOverlay.classList.add('active');
+    }
+
+    function closeSlotOverlay(){
+        slotOverlay.classList.remove('active');
+    }
+
+    slotModalClose.addEventListener('click', closeSlotOverlay);
+    slotOverlay.addEventListener('click', (e) => {
+        if(e.target === slotOverlay) closeSlotOverlay();
     });
 
-    loadDataButton.addEventListener('click',()=>{
-        const s=localStorage.getItem('gradingData');
-        if(!s){alert('Kayıt yok.');return;}
-        const d=JSON.parse(s);
-        evaluationTypeInput.value=d.evaluationType||'Ara değerlendirme Sunumu Teslimi 1'; // Varsayılanı yeni listenin ilk elemanıyla güncelledik
-        courseCodeInput.value=d.courseCode||'';
-        instructorNameInput.value=d.instructorName||'';
+    function doSave(idx){
+        if(!students.length&&!projectNames.length&&!criteriaNames.length
+           &&!courseCodeInput.value&&!instructorNameInput.value){
+            alert('Kaydedilecek veri yok.'); return;
+        }
+        const existing = getSlot(idx);
+        if(existing && !confirm(`Slot ${idx+1} ("${existing.label||'İsimsiz'}") üzerine yazılsın mı?`)) return;
+
+        const label = slotNameInput.value.trim() || (existing?.label) || `Kayıt ${idx+1}`;
+        localStorage.setItem(`gradingSlot_${idx}`, JSON.stringify({
+            label,
+            savedAt: Date.now(),
+            data: buildCurrentData()
+        }));
+        closeSlotOverlay();
+        alert(`Slot ${idx+1}'e kaydedildi: "${label}"`);
+    }
+
+    function doLoad(idx){
+        const slot = getSlot(idx);
+        if(!slot){ alert('Bu slot boş.'); return; }
+        const d = slot.data;
+
+        evaluationTypeInput.value = d.evaluationType || evaluationTypeInput.options[0].value;
+        courseCodeInput.value = d.courseCode || '';
+        instructorNameInput.value = d.instructorName || '';
         updateDynamicTitle();
 
-        numProjectsInput.value=d.numProj||3;
-        numCriteriaInput.value=d.numCrit||3;
-        projectNames=d.projectNames||[];
-        criteriaNames=d.criteriaNames||[];
-        students=d.students||[];
+        numProjectsInput.value = d.numProj || 3;
+        numCriteriaInput.value = d.numCrit || 3;
+        projectNames  = d.projectNames  || [];
+        criteriaNames = d.criteriaNames || [];
+        students      = d.students      || [];
 
         setConfigButton.click();
         renderTable();
-        alert('Yüklendi.');
-    });
+        closeSlotOverlay();
+        alert(`"${slot.label}" yüklendi.`);
+    }
+
+    // Buton dinleyicileri
+    saveDataButton.addEventListener('click', () => openSlotOverlay('save'));
+    loadDataButton.addEventListener('click', () => openSlotOverlay('load'));
 
     clearDataButton.addEventListener('click',()=>{
-        if(!confirm('Tüm veriler silinsin mi?'))return;
-        localStorage.removeItem('gradingData');
+        if(!confirm('Ekrandaki tüm veriler sıfırlansın mı?\n(Kayıtlı slotlar silinmez)'))return;
         projectNames=[];criteriaNames=[];students=[];
         numProjectsInput.value=3;numCriteriaInput.value=3;
         namesConfigSection.style.display='none';
@@ -391,6 +618,13 @@ document.addEventListener('DOMContentLoaded', () => {
         criteriaNamesContainer.innerHTML='';
         renderTable();updateDynamicTitle();
         alert('Sıfırlandı.');
+    });
+
+    document.getElementById('nukeAllSlotsButton').addEventListener('click', () => {
+        if (!confirm('Bu işlem 5 kayıt slotunun TAMAMINI kalıcı olarak silecektir.\n\nEmin misiniz?')) return;
+        if (!confirm('Gerçekten emin misiniz? Bu işlem geri alınamaz.')) return;
+        for (let i = 0; i < SLOT_COUNT; i++) localStorage.removeItem(`gradingSlot_${i}`);
+        alert('Tüm kayıt slotları silindi.');
     });
 
 
@@ -444,19 +678,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const wsCrit = XLSX.utils.aoa_to_sheet(critAoa);
         enableWrap(wsCrit, 3, 25);
 
-        /* 3) İstatistik (ortalama) */
-        const statsAoa=[['DÇ','PÇ','Ortalama %']];
-        uniqueDCPC().forEach(pr=>{
-            let sum=0,count=0;
-            const rel=criteriaNames.filter(c=>c.dc===pr.dc&&c.pc===pr.pc);
-            students.forEach(st=>projectNames.forEach(p=>rel.forEach(c=>{
-                sum+=st.grades[p][c.name]; count++;
-            })));
-            const avg=count? (sum/count).toFixed(2)+'%' : '—';
-            statsAoa.push([pr.dc, pr.pc, avg]);
+        /* 3) İstatistik (ortalama + başarı oranı) */
+        const stats = calcDCPCStats();
+        const statsAoa=[
+            ['Başarı Eşiği', `%${SUCCESS_THRESHOLD}`],
+            ['Toplam Öğrenci', students.length],
+            [],
+            ['DÇ','PÇ','Sınıf Ortalaması (%)','Başarılı Öğrenci','Toplam Öğrenci','Başarı Oranı (%)']
+        ];
+        stats.forEach(s => {
+            statsAoa.push([
+                s.dc,
+                s.pc,
+                s.classAvg.toFixed(2),
+                s.passCount,
+                s.totalStudents,
+                s.passRate.toFixed(2)
+            ]);
         });
         const wsStats = XLSX.utils.aoa_to_sheet(statsAoa);
-        enableWrap(wsStats,3,20);
+        enableWrap(wsStats, 6, 20);
 
         /* 4) Kitap */
         const wb = XLSX.utils.book_new();

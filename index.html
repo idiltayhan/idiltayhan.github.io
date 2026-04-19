@@ -147,6 +147,13 @@ if(typeof XLSX==='undefined'){
                 placeholder="Öğrenci Adı Soyadı"
             />
             <button id="addStudentButton">Öğrenci Ekle</button>
+            <button id="sortStudentsButton">A-Z Sırala</button>
+
+            <div class="csv-import-row">
+                <input id="csvFileInput" type="file" accept=".csv" style="display:none;" />
+                <button id="csvImportButton">CSV'den Öğrenci Yükle</button>
+                <span class="csv-hint">Ders dizelgesi CSV dosyasından Ad-Soyad ve Numara çekilir</span>
+            </div>
         </div>
 
         <!-- VERİ / EXPORT BUTONLARI ---------------------------------------- -->
@@ -154,6 +161,7 @@ if(typeof XLSX==='undefined'){
             <button id="saveDataButton">Kaydet</button>
             <button id="loadDataButton">Yükle</button>
             <button id="clearDataButton">Temizle</button>
+            <button id="nukeAllSlotsButton">Tüm Kayıtları Sil</button>
             <!-- Excel butonu -->
             <button id="exportExcelButton">Excel’e Aktar</button>
         </div>
@@ -175,6 +183,21 @@ if(typeof XLSX==='undefined'){
 
         <!-- Sınıf başarı istatistikleri -->
         <div id="classSuccessStats"></div>
+    </div>
+
+    <!-- KAYDET / YÜKLE OVERLAY ------------------------------------------- -->
+    <div id="slotOverlay" class="slot-overlay">
+        <div class="slot-modal">
+            <div class="slot-modal-header">
+                <h3 id="slotModalTitle">Slot Seçin</h3>
+                <button id="slotModalClose" class="slot-close-btn">&times;</button>
+            </div>
+            <div id="slotNameRow" class="slot-name-row">
+                <label>Kayıt adı:</label>
+                <input id="slotNameInput" type="text" placeholder="Örn: GRT321 Ara Değ. 1" />
+            </div>
+            <div id="slotButtons" class="slot-buttons"></div>
+        </div>
     </div>
 
     <!-- Ana JS -->
