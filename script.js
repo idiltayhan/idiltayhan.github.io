@@ -690,12 +690,31 @@ document.addEventListener('DOMContentLoaded', () => {
         /* 1) Not tablosu */
         const tbl = srcTbl.cloneNode(true);
 
-        // Hedef Not ve İşlem sütunlarını Excel'den çıkar
+        // Hedef Not ve İşlem sütunlarını Excel'den çıkar.
+        // DİKKAT: Kör körüne "son 2 hücreyi sil" YAPMA — kriter başlığı
+        // satırında bu sütunlar olmadığı için son 2 kriter başlığı uçuyor.
+        // Onun yerine class/içerik ile tespit et.
         tbl.querySelectorAll('tr').forEach(row => {
-            const cells = row.querySelectorAll('th, td');
-            if (cells.length >= 2) {
-                cells[cells.length - 1].remove(); // İşlem
-                cells[cells.length - 2].remove(); // Hedef Not
+            // Önce son hücre: "İşlem" başlığı veya Sil butonu içeren hücre mi?
+            let cells = row.querySelectorAll('th, td');
+            const last = cells[cells.length - 1];
+            if (last && (
+                last.textContent.trim() === 'İşlem' ||
+                last.querySelector('.delete-student-btn')
+            )) {
+                last.remove();
+            }
+
+            // Sonra yeni son hücre: Hedef Not sütunu mu?
+            cells = row.querySelectorAll('th, td');
+            const newLast = cells[cells.length - 1];
+            if (newLast && (
+                newLast.classList.contains('target-header') ||
+                newLast.classList.contains('target-grade-cell') ||
+                (newLast.classList.contains('cheat-col') &&
+                 newLast.textContent.trim() === 'Hedef Not')
+            )) {
+                newLast.remove();
             }
         });
 
